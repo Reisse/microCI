@@ -5,7 +5,12 @@ from github import Github
 
 
 def schedule_deployment(deployment):
-    threading.Timer(int(deployment['interval']) * 60, process_deployment, [deployment]).start()
+    try:
+        process_deployment(deployment)
+    except Exception as ex:
+        print(ex)
+
+    threading.Timer(int(deployment['interval']) * 60, schedule_deployment, [deployment]).start()
 
 
 def process_deployment(deployment):
@@ -24,5 +29,3 @@ def process_deployment(deployment):
             repo.create_issue(title='Deployment of \'' + deployment['sha'] + '\' failed',
                     body='Output:\n```\n' + e.stdout.decode("utf-8") +
                             '```\nErrors:\n```\n' + e.stderr.decode("utf-8") + '```')
-
-    schedule_deployment(deployment)
